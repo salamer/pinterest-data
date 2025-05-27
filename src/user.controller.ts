@@ -15,6 +15,15 @@ import {
 import { AppDataSource, User, Follow, Pins } from "./models";
 import type { JwtPayload } from "./utils";
 
+interface PinsInfo {
+  id: number;
+  userId: number;
+  postId: number;
+  caption: string | null;
+  imageUrl: string | null;
+  createdAt: Date;
+}
+
 interface UserProfileResponse {
   id: number;
   username: string;
@@ -23,7 +32,7 @@ interface UserProfileResponse {
   createdAt: Date;
   followers: number;
   following: number;
-  pins?: Pins[];
+  pins: PinsInfo[];
 }
 
 @Route("users")
@@ -122,7 +131,16 @@ export class UserController extends Controller {
       createdAt: user.createdAt,
       followers,
       following,
-      pins,
+      pins: pins
+        .filter((pin) => pin.post !== null && pin.post.imageUrl !== null)
+        .map((pin) => ({
+          caption: pin.post.caption,
+          imageUrl: pin.post.imageUrl,
+          postId: pin.post.id,
+          id: pin.id,
+          userId: pin.userId,
+          createdAt: pin.createdAt,
+        })),
     };
   }
 
@@ -130,7 +148,7 @@ export class UserController extends Controller {
   public async getPinners(
     @Path() userId: number,
     @Res() notFound: TsoaResponse<404, { message: string }>
-  ): Promise<{ pins: Pins[] }> {
+  ): Promise<{ pins: PinsInfo[] }> {
     const pins = await AppDataSource.getRepository(Pins).find({
       where: { userId },
       relations: ["post"],
@@ -140,7 +158,18 @@ export class UserController extends Controller {
       return notFound(404, { message: "No pins found for this user." });
     }
 
-    return { pins };
+    return {
+      pins: pins
+        .filter((pin) => pin.post !== null && pin.post.imageUrl !== null)
+        .map((pin) => ({
+          id: pin.id,
+          userId: pin.userId,
+          postId: pin.post.id,
+          caption: pin.post.caption,
+          imageUrl: pin.post.imageUrl,
+          createdAt: pin.createdAt,
+        })),
+    };
   }
   @Get("{userId}/followers")
   public async getFollowers(

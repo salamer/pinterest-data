@@ -1,5 +1,5 @@
 import {
-  Post as HttpPost,
+  Post,
   Delete,
   Route,
   Tags,
@@ -14,7 +14,7 @@ import {
   Get,
   Query,
 } from "tsoa";
-import { AppDataSource, Pins, Comment, Post, User } from "./models";
+import { AppDataSource, Pins, Comment, Posts, User } from "./models";
 import type { JwtPayload } from "./utils";
 
 export interface CreateCommentInput {
@@ -36,7 +36,7 @@ export interface CommentResponse {
 export class InteractionController extends Controller {
   @Security("jwt")
   @SuccessResponse(201, "Liked")
-  @HttpPost("pin")
+  @Post("pin")
   public async pinPost(
     @Request() req: Express.Request,
     @Path() postId: number,
@@ -44,7 +44,7 @@ export class InteractionController extends Controller {
   ): Promise<{ message: string }> {
     const currentUser = req.user as JwtPayload;
 
-    const post = await AppDataSource.getRepository(Post).findOneBy({
+    const post = await AppDataSource.getRepository(Posts).findOneBy({
       id: postId,
     });
     if (!post) return notFoundResponse(404, { message: "Post not found." });
@@ -79,7 +79,7 @@ export class InteractionController extends Controller {
 
   @Security("jwt")
   @SuccessResponse(201, "Comment Created")
-  @HttpPost("comments")
+  @Post("comments")
   public async createComment(
     @Request() req: Express.Request,
     @Path() postId: number,
@@ -88,7 +88,7 @@ export class InteractionController extends Controller {
   ): Promise<CommentResponse> {
     const currentUser = req.user as JwtPayload;
 
-    const post = await AppDataSource.getRepository(Post).findOneBy({
+    const post = await AppDataSource.getRepository(Posts).findOneBy({
       id: postId,
     });
     if (!post) return notFoundResponse(404, { message: "Post not found." });
@@ -125,7 +125,7 @@ export class InteractionController extends Controller {
     @Query() offset: number = 0,
     @Res() notFoundResponse: TsoaResponse<404, { message: string }>
   ): Promise<CommentResponse[]> {
-    const post = await AppDataSource.getRepository(Post).findOneBy({
+    const post = await AppDataSource.getRepository(Posts).findOneBy({
       id: postId,
     });
     if (!post) return notFoundResponse(404, { message: "Post not found." });
@@ -138,14 +138,18 @@ export class InteractionController extends Controller {
       skip: offset,
     });
 
-    return comments.map((c) => ({
-      id: c.id,
-      text: c.content,
-      userId: c.userId,
-      postId: c.postId,
-      username: c.user?.username || "unknown",
-      avatarUrl: c.user?.avatarUrl || null,
-      createdAt: c.createdAt,
-    }));
+    return comments
+      .filter(
+        (c) => c.postId === postId && c.userId !== null && c.user !== null
+      )
+      .map((c) => ({
+        id: c.id,
+        text: c.content,
+        userId: c.userId,
+        postId: c.postId,
+        username: c.user?.username || "unknown",
+        avatarUrl: c.user?.avatarUrl || null,
+        createdAt: c.createdAt,
+      }));
   }
 }

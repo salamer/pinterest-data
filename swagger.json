@@ -7,6 +7,93 @@
 		"requestBodies": {},
 		"responses": {},
 		"schemas": {
+			"PinsInfo": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"userId": {
+						"type": "number",
+						"format": "double"
+					},
+					"postId": {
+						"type": "number",
+						"format": "double"
+					},
+					"caption": {
+						"type": "string",
+						"nullable": true
+					},
+					"imageUrl": {
+						"type": "string",
+						"nullable": true
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					}
+				},
+				"required": [
+					"id",
+					"userId",
+					"postId",
+					"caption",
+					"imageUrl",
+					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"UserProfileResponse": {
+				"properties": {
+					"id": {
+						"type": "number",
+						"format": "double"
+					},
+					"username": {
+						"type": "string"
+					},
+					"bio": {
+						"type": "string",
+						"nullable": true
+					},
+					"avatarUrl": {
+						"type": "string",
+						"nullable": true
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time"
+					},
+					"followers": {
+						"type": "number",
+						"format": "double"
+					},
+					"following": {
+						"type": "number",
+						"format": "double"
+					},
+					"pins": {
+						"items": {
+							"$ref": "#/components/schemas/PinsInfo"
+						},
+						"type": "array"
+					}
+				},
+				"required": [
+					"id",
+					"username",
+					"bio",
+					"avatarUrl",
+					"createdAt",
+					"followers",
+					"following",
+					"pins"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"User": {
 				"properties": {
 					"id": {
@@ -43,126 +130,6 @@
 					"bio",
 					"avatarUrl",
 					"createdAt"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"Post": {
-				"properties": {
-					"id": {
-						"type": "number",
-						"format": "double"
-					},
-					"imageUrl": {
-						"type": "string"
-					},
-					"caption": {
-						"type": "string",
-						"nullable": true
-					},
-					"createdAt": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"user": {
-						"$ref": "#/components/schemas/User"
-					},
-					"userId": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"id",
-					"imageUrl",
-					"caption",
-					"createdAt",
-					"user",
-					"userId"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"Pins": {
-				"properties": {
-					"id": {
-						"type": "number",
-						"format": "double"
-					},
-					"createdAt": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"user": {
-						"$ref": "#/components/schemas/User"
-					},
-					"userId": {
-						"type": "number",
-						"format": "double"
-					},
-					"post": {
-						"$ref": "#/components/schemas/Post"
-					},
-					"postId": {
-						"type": "number",
-						"format": "double"
-					}
-				},
-				"required": [
-					"id",
-					"createdAt",
-					"user",
-					"userId",
-					"post",
-					"postId"
-				],
-				"type": "object",
-				"additionalProperties": false
-			},
-			"UserProfileResponse": {
-				"properties": {
-					"id": {
-						"type": "number",
-						"format": "double"
-					},
-					"username": {
-						"type": "string"
-					},
-					"bio": {
-						"type": "string",
-						"nullable": true
-					},
-					"avatarUrl": {
-						"type": "string",
-						"nullable": true
-					},
-					"createdAt": {
-						"type": "string",
-						"format": "date-time"
-					},
-					"followers": {
-						"type": "number",
-						"format": "double"
-					},
-					"following": {
-						"type": "number",
-						"format": "double"
-					},
-					"pins": {
-						"items": {
-							"$ref": "#/components/schemas/Pins"
-						},
-						"type": "array"
-					}
-				},
-				"required": [
-					"id",
-					"username",
-					"bio",
-					"avatarUrl",
-					"createdAt",
-					"followers",
-					"following"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -208,6 +175,25 @@
 				"type": "object",
 				"additionalProperties": false
 			},
+			"CreatePostBase64Input": {
+				"properties": {
+					"imageBase64": {
+						"type": "string"
+					},
+					"imageFileType": {
+						"type": "string"
+					},
+					"caption": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"imageBase64",
+					"imageFileType"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
 			"CommentResponse": {
 				"properties": {
 					"id": {
@@ -245,6 +231,18 @@
 					"username",
 					"avatarUrl",
 					"createdAt"
+				],
+				"type": "object",
+				"additionalProperties": false
+			},
+			"CreateCommentInput": {
+				"properties": {
+					"text": {
+						"type": "string"
+					}
+				},
+				"required": [
+					"text"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -582,7 +580,7 @@
 									"properties": {
 										"pins": {
 											"items": {
-												"$ref": "#/components/schemas/Pins"
+												"$ref": "#/components/schemas/PinsInfo"
 											},
 											"type": "array"
 										}
@@ -754,6 +752,76 @@
 			}
 		},
 		"/posts": {
+			"post": {
+				"operationId": "CreatePost",
+				"responses": {
+					"200": {
+						"description": "Post Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PostResponse"
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Posts"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreatePostBase64Input"
+							}
+						}
+					}
+				}
+			},
 			"get": {
 				"operationId": "GetFeedPosts",
 				"responses": {
@@ -921,6 +989,68 @@
 				]
 			}
 		},
+		"/posts/{postId}/pin": {
+			"post": {
+				"operationId": "PinPost",
+				"responses": {
+					"201": {
+						"description": "Liked",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Interactions (Pin & Comments)"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				]
+			}
+		},
 		"/posts/{postId}/unpin": {
 			"delete": {
 				"operationId": "UnpinPost",
@@ -966,6 +1096,68 @@
 			}
 		},
 		"/posts/{postId}/comments": {
+			"post": {
+				"operationId": "CreateComment",
+				"responses": {
+					"201": {
+						"description": "Comment Created",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/CommentResponse"
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "",
+						"content": {
+							"application/json": {
+								"schema": {
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"message"
+									],
+									"type": "object"
+								}
+							}
+						}
+					}
+				},
+				"tags": [
+					"Interactions (Pin & Comments)"
+				],
+				"security": [
+					{
+						"jwt": []
+					}
+				],
+				"parameters": [
+					{
+						"in": "path",
+						"name": "postId",
+						"required": true,
+						"schema": {
+							"format": "double",
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateCommentInput"
+							}
+						}
+					}
+				}
+			},
 			"get": {
 				"operationId": "GetComments",
 				"responses": {
