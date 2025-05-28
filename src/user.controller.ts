@@ -33,6 +33,7 @@ interface UserProfileResponse {
   followers: number;
   following: number;
   pins: PinsInfo[];
+  hasFollowed: boolean;
 }
 
 @Route("users")
@@ -103,8 +104,10 @@ export class UserController extends Controller {
     return { message: `Successfully unfollowed user ${userIdToUnfollow}` };
   }
 
+  @Security("jwt", ["optional"])
   @Get("{userId}/profile")
   public async getUserProfile(
+    @Request() req: Express.Request,
     @Path() userId: number,
     @Res() notFound: TsoaResponse<404, { message: string }>
   ): Promise<UserProfileResponse> {
@@ -122,6 +125,15 @@ export class UserController extends Controller {
       where: { userId },
       relations: ["post"],
     });
+    const currentUser = req.user as JwtPayload;
+    const hasFollowed = currentUser
+      ? await followRepo.findOne({
+          where: {
+            followerId: currentUser.userId,
+            followedId: userId,
+          },
+        })
+      : null;
 
     return {
       id: user.id,
@@ -141,6 +153,7 @@ export class UserController extends Controller {
           userId: pin.userId,
           createdAt: pin.createdAt,
         })),
+      hasFollowed: hasFollowed ? true : false,
     };
   }
 

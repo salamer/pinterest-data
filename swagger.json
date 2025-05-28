@@ -79,6 +79,9 @@
 							"$ref": "#/components/schemas/PinsInfo"
 						},
 						"type": "array"
+					},
+					"hasFollowed": {
+						"type": "boolean"
 					}
 				},
 				"required": [
@@ -89,7 +92,8 @@
 					"createdAt",
 					"followers",
 					"following",
-					"pins"
+					"pins",
+					"hasFollowed"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -161,6 +165,9 @@
 					"avatarUrl": {
 						"type": "string",
 						"nullable": true
+					},
+					"hasPinned": {
+						"type": "boolean"
 					}
 				},
 				"required": [
@@ -170,7 +177,8 @@
 					"createdAt",
 					"userId",
 					"username",
-					"avatarUrl"
+					"avatarUrl",
+					"hasPinned"
 				],
 				"type": "object",
 				"additionalProperties": false
@@ -347,9 +355,9 @@
 		}
 	},
 	"info": {
-		"title": "Instagram Simplified API",
+		"title": "Pinterest Simplified API",
 		"version": "1.0.0",
-		"description": "API docs for simplified Instagram backend",
+		"description": "API docs for simplified Pinterest backend",
 		"license": {
 			"name": "ISC"
 		},
@@ -554,7 +562,13 @@
 				"tags": [
 					"Users & Follows"
 				],
-				"security": [],
+				"security": [
+					{
+						"jwt": [
+							"optional"
+						]
+					}
+				],
 				"parameters": [
 					{
 						"in": "path",
@@ -842,7 +856,13 @@
 				"tags": [
 					"Posts"
 				],
-				"security": [],
+				"security": [
+					{
+						"jwt": [
+							"optional"
+						]
+					}
+				],
 				"parameters": [
 					{
 						"in": "query",
@@ -906,7 +926,13 @@
 				"tags": [
 					"Posts"
 				],
-				"security": [],
+				"security": [
+					{
+						"jwt": [
+							"optional"
+						]
+					}
+				],
 				"parameters": [
 					{
 						"in": "query",
@@ -975,7 +1001,13 @@
 				"tags": [
 					"Posts"
 				],
-				"security": [],
+				"security": [
+					{
+						"jwt": [
+							"optional"
+						]
+					}
+				],
 				"parameters": [
 					{
 						"in": "path",
