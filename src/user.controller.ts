@@ -12,8 +12,10 @@ import {
   Get,
   SuccessResponse,
 } from "tsoa";
-import { AppDataSource, User, Follow, Pins } from "./models";
+import { AppDataSource, User, Follow, Pins, Posts } from "./models";
 import type { JwtPayload } from "./utils";
+import { PostResponse } from "./post.controller";
+import { In } from "typeorm";
 
 interface PinsInfo {
   id: number;
@@ -184,6 +186,43 @@ export class UserController extends Controller {
         })),
     };
   }
+
+  @Security("jwt", ["optional"])
+  @Get("{userId}/posts")
+  public async getPostsByUser(
+    @Request() req: Express.Request,
+    @Path() userId: number,
+    @Res() notFound: TsoaResponse<404, { message: string }>
+  ): Promise<PostResponse[]> {
+    const posts = await AppDataSource.getRepository(Posts).find({
+      where: { userId },
+    });
+
+    const currentUser = req.user as JwtPayload;
+    const pins =
+      currentUser && currentUser.userId
+        ? await AppDataSource.getRepository(Pins).find({
+            where: {
+              userId: currentUser.userId,
+              postId: In(posts.map((p) => p.id)),
+            },
+          })
+        : [];
+    if (posts.length === 0) {
+      return notFound(404, { message: "No posts found for this user." });
+    }
+    return posts.map((post) => ({
+      id: post.id,
+      imageUrl: post.imageUrl,
+      caption: post.caption,
+      createdAt: post.createdAt,
+      userId: post.userId,
+      username: post.user?.username || "unknown",
+      avatarUrl: post.user?.avatarUrl || null,
+      hasPinned: pins.some((pin) => pin.postId === post.id),
+    }));
+  }
+
   @Get("{userId}/followers")
   public async getFollowers(
     @Path() userId: number,
