@@ -16,6 +16,7 @@ import {
 } from "tsoa";
 import { AppDataSource, Pins, Comment, Posts, User } from "./models";
 import type { JwtPayload } from "./utils";
+import { getCurrentUser } from "./auth.middleware";
 
 export interface CreateCommentInput {
   text: string;
@@ -34,7 +35,7 @@ export interface CommentResponse {
 @Route("posts/{postId}")
 @Tags("Interactions (Pin & Comments)")
 export class InteractionController extends Controller {
-  @Security("jwt")
+  // @Security("jwt")
   @SuccessResponse(201, "Liked")
   @Post("pin")
   public async pinPost(
@@ -42,7 +43,8 @@ export class InteractionController extends Controller {
     @Path() postId: number,
     @Res() notFoundResponse: TsoaResponse<404, { message: string }>
   ): Promise<{ message: string }> {
-    const currentUser = req.user as JwtPayload;
+    // const currentUser = req.user as JwtPayload;
+    const currentUser = getCurrentUser();
 
     const post = await AppDataSource.getRepository(Posts).findOneBy({
       id: postId,
@@ -60,14 +62,15 @@ export class InteractionController extends Controller {
     return { message: "Post pinned successfully" };
   }
 
-  @Security("jwt")
+  // @Security("jwt")
   @SuccessResponse(200, "Unpinned")
   @Delete("unpin")
   public async unpinPost(
     @Request() req: Express.Request,
     @Path() postId: number
   ): Promise<{ message: string }> {
-    const currentUser = req.user as JwtPayload;
+    // const currentUser = req.user as JwtPayload;
+    const currentUser = getCurrentUser();
 
     await AppDataSource.getRepository(Pins).delete({
       postId,
@@ -77,7 +80,7 @@ export class InteractionController extends Controller {
     return { message: "Post unpinned successfully" };
   }
 
-  @Security("jwt")
+  // @Security("jwt")
   @SuccessResponse(201, "Comment Created")
   @Post("comments")
   public async createComment(
@@ -86,7 +89,8 @@ export class InteractionController extends Controller {
     @Body() body: CreateCommentInput,
     @Res() notFoundResponse: TsoaResponse<404, { message: string }>
   ): Promise<CommentResponse> {
-    const currentUser = req.user as JwtPayload;
+    // const currentUser = req.user as JwtPayload;
+    const currentUser = getCurrentUser();
 
     const post = await AppDataSource.getRepository(Posts).findOneBy({
       id: postId,

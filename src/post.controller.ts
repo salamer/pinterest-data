@@ -18,6 +18,7 @@ import { Posts, User } from "./models";
 import { uploadBase64ToObjectStorage } from "./objectstorage.service";
 import type { JwtPayload } from "./utils";
 import { In } from "typeorm";
+import { getCurrentUser } from "./auth.middleware";
 
 export interface CreatePostBase64Input {
   imageBase64: string;
@@ -39,7 +40,7 @@ export interface PostResponse {
 @Route("posts")
 @Tags("Posts")
 export class PostController extends Controller {
-  @Security("jwt")
+  // @Security("jwt")
   @Post("")
   @SuccessResponse(200, "Post Created")
   public async createPost(
@@ -48,7 +49,8 @@ export class PostController extends Controller {
     @Res() badRequestResponse: TsoaResponse<400, { message: string }>,
     @Res() serverErrorResponse: TsoaResponse<500, { message: string }>
   ): Promise<PostResponse> {
-    const currentUser = req.user as JwtPayload;
+    // const currentUser = req.user as JwtPayload;
+    const currentUser = getCurrentUser();
 
     if (!body.imageBase64 || !body.imageFileType.startsWith("image/")) {
       return badRequestResponse(400, {
@@ -95,7 +97,7 @@ export class PostController extends Controller {
     }
   }
 
-  @Security("jwt", ["optional"])
+  // @Security("jwt", ["optional"])
   @Get("")
   public async getFeedPosts(
     @Request() req: Express.Request,
@@ -109,7 +111,8 @@ export class PostController extends Controller {
       skip: offset,
     });
 
-    const currentUser = req.user as JwtPayload;
+    // const currentUser = req.user as JwtPayload;
+    const currentUser = getCurrentUser();
     const pins =
       currentUser && currentUser.userId
         ? await AppDataSource.getRepository(Pins).find({
@@ -132,7 +135,7 @@ export class PostController extends Controller {
     }));
   }
 
-  @Security("jwt", ["optional"])
+  // @Security("jwt", ["optional"])
   @Get("search")
   public async searchPosts(
     @Request() req: Express.Request,
@@ -159,7 +162,8 @@ export class PostController extends Controller {
       .skip(offset)
       .getMany();
 
-    const currentUser = req.user as JwtPayload;
+    // const currentUser = req.user as JwtPayload;
+    const currentUser = getCurrentUser();
     const pins =
       currentUser && currentUser.userId
         ? await AppDataSource.getRepository(Pins).find({
@@ -182,7 +186,7 @@ export class PostController extends Controller {
     }));
   }
 
-  @Security("jwt", ["optional"])
+  // @Security("jwt", ["optional"])
   @Get("{postId}")
   public async getPostById(
     @Request() req: Express.Request,
@@ -198,7 +202,8 @@ export class PostController extends Controller {
       return notFoundResponse(404, { message: "Post not found" });
     }
 
-    const currentUser = req.user as JwtPayload;
+    // const currentUser = req.user as JwtPayload;
+    const currentUser = getCurrentUser();
     const pins =
       currentUser && currentUser.userId
         ? await AppDataSource.getRepository(Pins).findOne({
